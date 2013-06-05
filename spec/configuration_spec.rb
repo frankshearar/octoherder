@@ -18,14 +18,30 @@ module OctoHerder
       Configuration.read_string File.open(conf_file, "r") { |f| f.read }
     end
 
-    it "should handle empty input" do
-      conf = Configuration.read_string ""
-      expect(conf.milestones).to be_empty
+    it "should reject empty input because there's no master defined" do
+      expect {
+        Configuration.read_string ""
+      }.to raise_error(KeyError) { |e|
+        expect(e.message).to include("master")
+      }
     end
 
     context "with sample.yml" do
       let(:conf) { Configuration.read_file conf_file }
       let(:source) { YAML.load_file conf_file }
+
+      it "can read in the master repo name" do
+        expect(conf.master.count).to equal(source['master'].count)
+      end
+
+      it "can read in the columns" do
+        expect(conf.columns.count).to equal(source['columns'].count)
+      end
+
+      it "can read in the subsidiary repositories" do
+        expect(conf.repositories.count).to equal(source['repositories'].count)
+      end
+
       it "can read in the milestones" do
         expect(conf.milestones.count).to equal(source['milestones'].count)
       end
