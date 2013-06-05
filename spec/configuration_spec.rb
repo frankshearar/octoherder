@@ -31,7 +31,7 @@ module OctoHerder
       let(:source) { YAML.load_file conf_file }
 
       it "can read in the master repo name" do
-        expect(conf.master.count).to equal(source['master'].count)
+        expect(conf.master).to eq(source['master'])
       end
 
       it "can read in the columns" do

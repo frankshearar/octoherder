@@ -1,6 +1,5 @@
 ---
-master:
-  - me/master-repo
+master: me/master-repo
 
 repositories:
   - me/sub-repo
