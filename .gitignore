@@ -1,0 +1,6 @@
+*~
+.#*
+\#*
+pkg/*
+coverage.info
+coverage/*

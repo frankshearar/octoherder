@@ -1,0 +1,19 @@
+---
+master:
+  - me/master-repo
+
+repositories:
+  - me/sub-repo
+  - other/sub-repo2
+
+milestones:
+  - milestone-1
+  - milestone-2
+  - milestone-3
+
+columns:
+  - 0 - Backlog
+  - 1 - Ready
+  - 2 - Working
+  - 3 - QA
+  - 4 - Done
