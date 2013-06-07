@@ -32,6 +32,7 @@ module OctoHerder
       let(:source) { YAML.load_file conf_file }
       let (:connection) { mock :octokit }
       let (:master) { source.fetch('master') }
+      let (:labels) { source.fetch('labels', []) }
       let (:linked_repos) { source.fetch('repositories', []) }
       let (:milestones) { source.fetch('milestones', []) }
       let (:repo_count) { ([master] + linked_repos).length }
@@ -44,12 +45,27 @@ module OctoHerder
         expect(conf.columns.count).to equal(source['columns'].count)
       end
 
+      it "can read in the labels" do
+        expect(conf.labels.count).to equal(source['labels'].count)
+      end
+
       it "can read in the subsidiary repositories" do
         expect(conf.repositories.count).to equal(source['repositories'].count)
       end
 
       it "can read in the milestones" do
         expect(conf.milestones.count).to equal(source['milestones'].count)
+      end
+
+      it "should add labels to repositories that lack some" do
+        connection.stub(:labels).and_return([], [], [])
+        connection.stub(:add_label)
+        connection.should_receive(:labels).exactly(repo_count).times
+        labels.each { |label|
+          connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), label, OctoHerder::NEUTRAL_TONE)
+        }
+
+        conf.update_labels connection
       end
 
       it "should ask all repositories for their milestones" do

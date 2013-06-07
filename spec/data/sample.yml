@@ -20,3 +20,12 @@ columns:
   - 2 - Working
   - 3 - QA
   - 4 - Done
+
+labels:
+  - 0.5
+  - 1
+  - 2
+  - 3
+  - 5
+  - 8
+  - 13

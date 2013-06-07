@@ -4,7 +4,9 @@ require 'time'
 require 'yaml'
 
 module OctoHerder
-  Configuration = Hamsterdam::Struct.define(:master, :repositories, :milestones, :columns)
+  NEUTRAL_TONE = '#cccccc'
+
+  Configuration = Hamsterdam::Struct.define(:master, :repositories, :milestones, :columns, :labels)
   class Configuration
     def self.read_file path
       File.open(path.to_s, "r") { |f| self.read_string f.read }
@@ -19,9 +21,24 @@ module OctoHerder
 
       master = data.fetch('master')
       columns = data.fetch('columns', [])
+      labels = data.fetch('labels', [])
       milestones = data.fetch('milestones', [])
       repositories = data.fetch('repositories', [])
-      Configuration.new master: master, repositories: repositories, milestones: milestones, columns: columns
+      Configuration.new master: master, repositories: repositories, milestones: milestones, columns: columns, labels: labels
+    end
+
+    # Ensure that every repository has the specified labels. Labels always
+    # have the same, neutral, colour.
+    def update_labels octokit_connection
+      ([master] + repositories).map {|str|
+        Octokit::Repository.new str
+      }.each { |r|
+        actual_labels = octokit_connection.labels r
+        (labels - actual_labels).each { |label|
+          octokit_connection.add_label(r, label, NEUTRAL_TONE)
+        }
+      }
+    end
 
     # Ensure that every repository has the specified milestones, ignoring
     # closed ones.
