@@ -52,13 +52,23 @@ module OctoHerder
           m.fetch('title', '')
         }
         milestones.reject { |m| actual_milestones.include? m['title'] }.each { |m|
-          opts = m.dup
-          opts.delete 'title'
-          opts['due_on'] = opts['due_on'].iso8601 if opts.has_key? 'due_on'
+          opts = to_octokit_opts m
           octokit_connection.create_milestone(repo, m['title'], opts)
+        }
+
+        milestones.select { |m| actual_milestones.include? m['title'] }.each { |m|
+          opts = to_octokit_opts m
+          octokit_connection.update_milestone(repo, m['title'], opts)
         }
       }
       self
+    end
+
+    def to_octokit_opts hash
+      opts = hash.dup
+      opts.delete 'title'
+      opts['due_on'] = opts['due_on'].iso8601 if opts.has_key? 'due_on'
+      opts
     end
   end
 end

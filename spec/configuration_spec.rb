@@ -87,6 +87,18 @@ module OctoHerder
 
         conf.update_milestones connection
       end
+
+      it "should update existing milestones" do
+        connection.stub(:list_milestones).and_return([{'title' => 'milestone-1'},
+                                                      {'title' => 'milestone-2'},
+                                                      {'title' => 'milestone-3'}])
+        connection.stub(:update_milestone)
+        connection.should_receive(:update_milestone).with(an_instance_of(Octokit::Repository), 'milestone-1', {'state' => 'closed'}).exactly(repo_count).times
+        connection.should_receive(:update_milestone).with(an_instance_of(Octokit::Repository), 'milestone-2', {'due_on' => '2011-04-10T20:09:31Z'}).exactly(repo_count).times
+        connection.should_receive(:update_milestone).with(an_instance_of(Octokit::Repository), 'milestone-3', {'state' => 'open', 'description' => 'The third step in total world domination.'}).exactly(repo_count).times
+
+        conf.update_milestones connection
+      end
     end
   end
 end
