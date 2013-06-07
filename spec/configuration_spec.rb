@@ -1,6 +1,7 @@
 require_relative 'spec_helper.rb'
 require 'rspec'
 require 'octoherder/configuration'
+require 'data/sample-github-responses'
 
 module OctoHerder
   describe Configuration do
@@ -29,6 +30,11 @@ module OctoHerder
     context "with sample.yml" do
       let(:conf) { Configuration.read_file conf_file }
       let(:source) { YAML.load_file conf_file }
+      let (:connection) { mock :octokit }
+      let (:master) { source.fetch('master') }
+      let (:linked_repos) { source.fetch('repositories', []) }
+      let (:milestones) { source.fetch('milestones', []) }
+      let (:repo_count) { ([master] + linked_repos).length }
 
       it "can read in the master repo name" do
         expect(conf.master).to eq(source['master'])
@@ -44,6 +50,26 @@ module OctoHerder
 
       it "can read in the milestones" do
         expect(conf.milestones.count).to equal(source['milestones'].count)
+      end
+
+      it "should ask all repositories for their milestones" do
+        connection.stub(:list_milestones).and_return(LIST_MILESTONES_FOR_A_REPOSITORY,
+                                                     [],
+                                                     [])
+        connection.stub(:create_milestone)
+        connection.should_receive(:list_milestones).exactly(repo_count).times
+        conf.update_milestones connection
+      end
+
+      it "should add all missing milestones to all repositories" do
+        connection.stub(:list_milestones).and_return(LIST_MILESTONES_FOR_A_REPOSITORY)
+        connection.stub(:create_milestone)
+
+          connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-1', {'state' => 'closed'}).exactly(repo_count).times
+          connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-2', {'due_on' => '2011-04-10T20:09:31Z'}).exactly(repo_count).times
+          connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-3', {'state' => 'open', 'description' => 'The third step in total world domination.'}).exactly(repo_count).times
+
+        conf.update_milestones connection
       end
     end
   end

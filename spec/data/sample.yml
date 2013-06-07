@@ -6,9 +6,13 @@ repositories:
   - other/sub-repo2
 
 milestones:
-  - milestone-1
-  - milestone-2
-  - milestone-3
+  - title: milestone-1
+    state: closed
+  - title: milestone-2
+    due_on: 2011-04-10T20:09:31Z
+  - title: milestone-3
+    state: open
+    description: 'The third step in total world domination.'
 
 columns:
   - 0 - Backlog
