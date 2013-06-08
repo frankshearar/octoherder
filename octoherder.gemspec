@@ -14,6 +14,7 @@ Gem::Specification.new do |s|
   s.authors = ['Frank Shearar']
   s.version = PKG_VERSION
   s.requirements << 'none'
+  s.executables << 'octoherder'
   s.require_paths = ['lib']
   s.required_rubygems_version = Gem::Requirement.new('>= 1.3.6') if s.respond_to? :required_rubygems_version=
   # ls-files shows only those files under version control.

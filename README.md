@@ -3,6 +3,46 @@ Octoherder
 
 Because everyone needs a little help herding their octocats.
 
+So what's it for?
+-----------------
+
+If you have multiple repositories for one project, it's a pain to manage the project. Sure, huboard gives you a kanban board across your repositories, but you still have to add the columns and milestones to your various repositories. And what happens when you need to change an existing milestone? Octoherder lets you define your canonical set of milestones and labels, and ensures that all your repositories have the same setup.
+
+How do I use it?
+----------------
+
+First decide what your master repository will be. If you're a huboard user, choose the repository that holds the `Link <=> other/repo` labels. Octoherder will use this information during its setup.
+
+__Everything below here is vapourware!__
+Run `octoherder -o definitions.yml -r master/repo`. That will produce a YAML file looking something like this:
+
+````yaml
+---
+master: me/master-repo
+
+repositories:
+  - me/sub-repo
+  - other/sub-repo2
+
+milestones:
+  - title: milestone-1
+    state: closed
+  - title: milestone-2
+    due_on: 2011-04-10T20:09:31Z
+  - title: milestone-3
+    state: open
+    description: The third step in total world domination.
+
+columns:
+  - 0 - Backlog
+  - 1 - Ready
+  - 2 - Working
+  - 3 - QA
+  - 4 - Done
+````
+
+Adjust your milestones as necessary, and update your repositories with their new milestones with `octoherder -f definitions.yml`. Done!
+
 Licence
 -------
 
