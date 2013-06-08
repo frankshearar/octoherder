@@ -16,6 +16,7 @@ How do I use it?
 First decide what your master repository will be. If you're a huboard user, choose the repository that holds the `Link <=> other/repo` labels. Octoherder will use this information during its setup.
 
 __Everything below here is vapourware!__
+
 Run `octoherder -o definitions.yml -r master/repo`. That will produce a YAML file looking something like this:
 
 ````yaml
