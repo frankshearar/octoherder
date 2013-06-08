@@ -1,5 +1,5 @@
 source 'http://rubygems.org'
-gem 'octokit', :github => 'octokit/octokit.rb'
+gem 'octokit'
 gem 'rake'
 gem 'hamsterdam'
 
