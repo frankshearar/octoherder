@@ -30,6 +30,7 @@ GEM
     hamsterdam (1.0.8)
       hamster
     hashie (2.0.5)
+    json (1.7.7)
     listen (1.1.4)
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9)
@@ -82,6 +83,7 @@ DEPENDENCIES
   coveralls
   guard-rspec
   hamsterdam
+  json (~> 1.7.7)
   octokit
   pry
   rake
