@@ -6,6 +6,7 @@ require 'rake/clean'
 require 'rake/testtask'
 
 CLEAN.include('pkg')
+CLEAN.include('coverage')
 
 RSpec::Core::RakeTask.new(:test) do |spec|
   spec.pattern = 'spec/*_spec.rb'

@@ -73,6 +73,7 @@ GEM
     simplecov-html (0.7.1)
     slop (3.4.5)
     thor (0.18.1)
+    trollop (2.0)
 
 PLATFORMS
   ruby
@@ -86,3 +87,4 @@ DEPENDENCIES
   rake
   rspec (>= 2.11)
   simplecov
+  trollop

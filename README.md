@@ -3,6 +3,8 @@ Octoherder
 
 Because everyone needs a little help herding their octocats.
 
+[![Build Status](https://secure.travis-ci.org/frankshearar/octoherder.png?branch=master)](http://travis-ci.org/frankshearar/octoherder) [![Coverage Status](https://coveralls.io/repos/frankshearar/octoherder/badge.png?branch=master)](https://coveralls.io/r/frankshearar/octoherder)
+
 So what's it for?
 -----------------
 

@@ -1,4 +1,4 @@
-require_relative 'spec_helper.rb'
+require 'spec_helper'
 require 'rspec'
 require 'octoherder/configuration'
 require 'data/sample-github-responses'

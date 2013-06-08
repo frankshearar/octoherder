@@ -1,4 +1,5 @@
-PKG_VERSION = '0.1.dev'
+$:.unshift File.expand_path("../lib", __FILE__)
+require "octoherder/version"
 
 Gem::Specification.new do |s|
   # These dependencies appear in the Gemfile.
@@ -12,7 +13,7 @@ Gem::Specification.new do |s|
   s.email = 'frank@angband.za.org'
   s.license = 'MIT'
   s.authors = ['Frank Shearar']
-  s.version = PKG_VERSION
+  s.version = OctoHerder::VERSION
   s.requirements << 'none'
   s.executables << 'octoherder'
   s.require_paths = ['lib']

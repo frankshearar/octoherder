@@ -2,6 +2,7 @@ source 'http://rubygems.org'
 gem 'octokit'
 gem 'rake'
 gem 'hamsterdam'
+gem 'trollop'
 
 group :development do
   gem 'pry'

@@ -7,14 +7,4 @@ $LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
 
 require 'octoherder'
 
-def help
-  puts <<-HELP
-usage:
-    octoherder --help
-    octoherder --version
-    octoherder -f definitions.yml
-    octoherder -r your/repo [-o output-file.yml]
-HELP
-end
-
-help
+OctoHerder::CLI.run(ARGV)
