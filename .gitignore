@@ -1,5 +1,17 @@
 *~
 .#*
+.bundle/
+bin/autospec
+bin/coderay
+bin/coveralls
+bin/guard
+bin/htmldiff
+bin/ldiff
+bin/pry
+bin/rake
+bin/restclient
+bin/rspec
+bin/thor
 \#*
 pkg/*
 coverage.info
