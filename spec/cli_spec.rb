@@ -5,6 +5,8 @@ require 'rspec'
 module OctoHerder
   describe CLI do
     context "bin/octoherder" do
+      let(:conf) { Configuration.read_file 'spec/data/sample.yml' }
+      let (:kitty) { mock :octokit_client }
       let (:usage) {<<-USAGE
 OctoHerder helps you manage your multi-repository project.
 
@@ -32,6 +34,15 @@ USAGE
         it "should display usage" do
           output = `bin/octoherder --help`
           expect(output).to eq(usage)
+        end
+      end
+
+      context "with -f" do
+        it "should connect to GitHub" do
+          kitty.stub(:connection)
+          kitty.should_receive(:connection)
+
+          CLI.run(["-f", "spec/data/sample.yml"], kitty)
         end
       end
     end

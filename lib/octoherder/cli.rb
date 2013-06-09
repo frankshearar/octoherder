@@ -24,6 +24,16 @@ HELP
         p.parse args
         raise Trollop::HelpNeeded if args.empty? # Show help screen
       end
+
+      CLI.new(opts, octokit_client).execute
+    end
+
+    def initialize(opts, octokit_client)
+      @client = octokit_client
+    end
+
+    def execute
+      @client.connection
     end
   end
 end
