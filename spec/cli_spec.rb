@@ -1,12 +1,14 @@
 require 'spec_helper'
 require 'octoherder'
 require 'rspec'
+require 'data/sample-github-responses'
 
 module OctoHerder
   describe CLI do
     context "bin/octoherder" do
       let(:conf) { Configuration.read_file 'spec/data/sample.yml' }
       let (:kitty) { mock :octokit_client }
+      let (:version) { "octoherder #{OctoHerder::VERSION}\n" }
       let (:usage) {<<-USAGE
 OctoHerder helps you manage your multi-repository project.
 
@@ -14,12 +16,12 @@ Usage:
     
     octoherder [options]
 where [options] are:
-   --input-file, -f:   Path to the canonical project setup
-         --repo, -r:   Name of the master repository
-  --output-file, -o:   Path to the file that will contain the canonical project
-                       setup
-      --version, -v:   Print version and exit
-         --help, -h:   Show this message
+   --input-file, -i <filename/uri>:   Path to the canonical project setup
+                    --repo, -r <s>:   Name of the master repository
+  --output-file, -o <filename/uri>:   Path to the file that will contain the
+                                      canonical project setup
+                     --version, -v:   Print version and exit
+                        --help, -h:   Show this message
 USAGE
       }
 
@@ -37,12 +39,44 @@ USAGE
         end
       end
 
-      context "with -f" do
-        it "should connect to GitHub" do
-          kitty.stub(:connection)
-          kitty.should_receive(:connection)
+      context "with --version" do
+        it "should display the version string" do
+          output = `bin/octoherder --version`
+          expect(output).to eq(version)
+        end
+      end
 
-          CLI.run(["-f", "spec/data/sample.yml"], kitty)
+      context "with --input-file" do
+        before :each do
+          kitty.stub(:connection)
+          kitty.stub(:list_milestones).and_return(LIST_MILESTONES_FOR_A_REPOSITORY)
+          kitty.stub(:create_milestone)
+        end
+
+        after :each do
+          CLI.run(["--input-file", "spec/data/sample.yml"], kitty)
+        end
+
+        it "should read in the input file" do
+          # We could only ask for the master repository's milestones if we
+          # correctly read the sample config file.
+          kitty.should_receive(:list_milestones).with(an_instance_of(Octokit::Repository))
+        end
+      end
+
+      context "with --output-file" do
+        it "requires --repo" do
+          ->{
+            CLI.run(["--output-file", "spec/data/sample.yml"], kitty)
+          }.should raise_error(SystemExit)
+        end
+      end
+
+      context "with --repo" do
+        it "requires --output-file" do
+          ->{
+            CLI.run(["--repo", "foo/bar"], kitty)
+          }.should raise_error(SystemExit)
         end
       end
     end

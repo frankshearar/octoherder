@@ -44,7 +44,7 @@ columns:
   - 4 - Done
 ````
 
-Adjust your milestones as necessary, and update your repositories with their new milestones with `octoherder -f definitions.yml`. Done!
+Adjust your milestones as necessary, and update your repositories with their new milestones with `octoherder -i definitions.yml`. Done!
 
 Licence
 -------
