@@ -20,6 +20,9 @@ where [options] are:
                     --repo, -r <s>:   Name of the master repository
   --output-file, -o <filename/uri>:   Path to the file that will contain the
                                       canonical project setup
+                    --user, -u <s>:   User as whom to authenticate
+                --password, -p <s>:   Users password
+             --oauth-token, -t <s>:   OAuth token
                      --version, -v:   Print version and exit
                         --help, -h:   Show this message
 USAGE
@@ -77,6 +80,25 @@ USAGE
           ->{
             CLI.run(["--repo", "foo/bar"], kitty)
           }.should raise_error(SystemExit)
+        end
+      end
+
+      context "with --user" do
+        let (:user) { 'me' }
+        let (:password) { 'sekrit' }
+        before :each do
+          kitty.stub(:login)
+        end
+
+        it "passes the user to Octokit" do
+          kitty.should_receive(:login).with(user)
+          CLI.run(["--user", "me"], kitty)
+        end
+
+        it "passes the password to Octokit" do
+          kitty.stub(:password)
+          kitty.should_receive(:password).with(password)
+          CLI.run(["--user", "me", "--password", password], kitty)
         end
       end
     end
