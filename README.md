@@ -15,8 +15,6 @@ How do I use it?
 
 First decide what your master repository will be. If you're a huboard user, choose the repository that holds the `Link <=> other/repo` labels. Octoherder will use this information during its setup.
 
-__Everything below here is vapourware!__
-
 Run `octoherder -o definitions.yml -r master/repo`. That will produce a YAML file looking something like this:
 
 ````yaml
@@ -27,7 +25,7 @@ repositories:
   - me/sub-repo
   - other/sub-repo2
 
-milestones:
+milestones: # TODO: we don't pull milestone data properly yet.
   - title: milestone-1
     state: closed
   - title: milestone-2
@@ -43,6 +41,8 @@ columns:
   - 3 - QA
   - 4 - Done
 ````
+
+__Everything below here is vapourware!__
 
 Adjust your milestones as necessary, and update your repositories with their new milestones with `octoherder -i definitions.yml`. Done!
 
