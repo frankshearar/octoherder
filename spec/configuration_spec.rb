@@ -27,6 +27,19 @@ module OctoHerder
       }
     end
 
+    it "can write to a file" do
+      target_file = "can-configuration-write-to-a-file"
+
+      conf = Configuration.read_file conf_file
+      conf.write_file(target_file)
+      begin
+        new_conf = Configuration.read_file target_file
+        expect(new_conf).to eq(conf)
+      ensure
+        FileUtils.rm(target_file) if File.exist?(target_file)
+      end
+    end
+
     context "with sample.yml" do
       let(:conf) { Configuration.read_file conf_file }
       let(:source) { YAML.load_file conf_file }

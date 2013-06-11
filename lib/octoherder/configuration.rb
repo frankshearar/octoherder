@@ -27,6 +27,18 @@ module OctoHerder
       Configuration.new master: master, repositories: repositories, milestones: milestones, columns: columns, labels: labels
     end
 
+    def write_file path
+      File.open(path.to_s, "w") { |f|
+        h = Hash.new
+        h['master'] = master
+        h['repositories'] = repositories
+        h['milestones'] = milestones # These are bare hashes at the moment
+        h['columns'] = columns
+        h['labels'] = labels
+        f.puts h.to_yaml
+      }
+    end
+
     # Ensure that every repository has the specified labels. Labels always
     # have the same, neutral, colour.
     def update_labels octokit_connection
