@@ -27,6 +27,19 @@ module OctoHerder
       Configuration.new master: master, repositories: repositories, milestones: milestones, columns: columns, labels: labels
     end
 
+    def self.generate_configuration octokit_connection, master_repo_name
+      all_labels = octokit_connection.labels(master_repo_name).
+        collect { |l| l.fetch('name', '') }
+      repo_links = all_labels.select { |l| l.match @@huboard_link }
+      repositories = repo_links.map { |l| l.match(@@huboard_link)[1].strip }
+      columns = all_labels.select { |l| l.match(@@huboard_column) }
+      labels = all_labels - repo_links - columns
+      milestones = octokit_connection.list_milestones(master_repo_name).collect {|h|
+      }
+
+      Configuration.new master: master_repo_name, repositories: repositories, milestones: milestones, columns: columns, labels: labels
+    end
+
     def write_file path
       File.open(path.to_s, "w") { |f|
         h = Hash.new
@@ -82,5 +95,9 @@ module OctoHerder
       opts['due_on'] = opts['due_on'].iso8601 if opts.has_key? 'due_on'
       opts
     end
+
+    private
+    @@huboard_link = /Link.*<=>(.*)/
+    @@huboard_column = /[0-9]+\ .*/
   end
 end

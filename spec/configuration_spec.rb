@@ -6,6 +6,7 @@ require 'data/sample-github-responses'
 module OctoHerder
   describe Configuration do
     let (:conf_file) { (Pathname.new(__FILE__).parent + "data/sample.yml").to_s }
+    let (:connection) { mock :octokit }
 
     it "should be instantiable" do
       Configuration.new
@@ -27,23 +28,9 @@ module OctoHerder
       }
     end
 
-    it "can write to a file" do
-      target_file = "can-configuration-write-to-a-file"
-
-      conf = Configuration.read_file conf_file
-      conf.write_file(target_file)
-      begin
-        new_conf = Configuration.read_file target_file
-        expect(new_conf).to eq(conf)
-      ensure
-        FileUtils.rm(target_file) if File.exist?(target_file)
-      end
-    end
-
     context "with sample.yml" do
       let(:conf) { Configuration.read_file conf_file }
       let(:source) { YAML.load_file conf_file }
-      let (:connection) { mock :octokit }
       let (:master) { source.fetch('master') }
       let (:labels) { source.fetch('labels', []) }
       let (:linked_repos) { source.fetch('repositories', []) }
@@ -111,6 +98,56 @@ module OctoHerder
         connection.should_receive(:update_milestone).with(an_instance_of(Octokit::Repository), 'milestone-3', {'state' => 'open', 'description' => 'The third step in total world domination.'}).exactly(repo_count).times
 
         conf.update_milestones connection
+      end
+    end
+
+    context "generating a brand new configuration" do
+      let (:labels) {
+        [{ # Huboard link tags
+           "url" => "https =>//api.github.com/repos/me/mine/labels/Link <=> me/other", # This needs escaping, but the tests don't care
+           "name" => "Link <=> me/other",
+           "color" => "f29513"
+         },
+         { # Cost tags
+           "url" => "https =>//api.github.com/repos/me/mine/labels/0.5",
+           "name" => "0.5",
+           "color" => "cccccc"
+         },
+
+         { # Huboard column tags
+           "url" => "https =>//api.github.com/repos/me/mine/labels/0 - Backlog",
+           "name" => "0 - Backlog",
+           "color" => "cccccc"
+         },
+         { # Random other tags
+           "url" => "https =>//api.github.com/repos/me/mine/labels/critical",
+           "name" => "critical",
+           "color" => "ff0000"
+         }]
+      }
+
+      it "can be done" do
+        connection.stub(:list_milestones).and_return(LIST_MILESTONES_FOR_A_REPOSITORY)
+        connection.stub(:labels).and_return(labels)
+        connection.should_receive(:list_milestones)
+        connection.should_receive(:labels)
+        c = Configuration.generate_configuration connection, "me/mine"
+        expect(c.labels).to eq(['0.5', 'critical'])
+        expect(c.repositories).to eq(['me/other'])
+        expect(c.columns).to eq(['0 - Backlog'])
+      end
+
+      it "can write to a file" do
+        target_file = "can-configuration-write-to-a-file"
+
+        conf = Configuration.read_file conf_file
+        conf.write_file(target_file)
+        begin
+          new_conf = Configuration.read_file target_file
+          expect(new_conf).to eq(conf)
+        ensure
+          FileUtils.rm(target_file) if File.exist?(target_file)
+        end
       end
     end
   end

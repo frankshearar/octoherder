@@ -12,7 +12,7 @@ milestones:
     due_on: 2011-04-10T20:09:31Z
   - title: milestone-3
     state: open
-    description: 'The third step in total world domination.'
+    description: The third step in total world domination.
 
 columns:
   - 0 - Backlog
