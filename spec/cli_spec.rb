@@ -127,5 +127,21 @@ USAGE
         end
       end
     end
+
+    context "Octokit integration" do
+      it "should be able to run to completion" do
+        expect {
+          c = CLI.run ["--repo", "frankshearar/octoherder"]
+        }.to raise_error(SystemExit)
+      end
+
+      it "should translate command line arguments into Octokit authorization credentials" do
+        input = {user: 'me', password: 'password', user_given: true, password_given: true}
+        output = CLI.octoauth input
+        expect(output).to eq({login: 'me', password: 'password'})
+      end
+
+      it "should pass through the OAuth token"
+    end
   end
 end

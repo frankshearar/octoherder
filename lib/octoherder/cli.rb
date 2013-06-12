@@ -36,7 +36,8 @@ HELP
 
     def self.run(args)
       opts = parse_argv(args)
-      CLI.new.run Octokit.new(octoauth(opts)), opts
+      kitty = Octokit.new(octoauth(opts))
+      CLI.new.run kitty, opts
     end
 
     def self.octoauth cli_opts
