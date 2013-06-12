@@ -34,7 +34,14 @@ module OctoHerder
       repositories = repo_links.map { |l| l.match(@@huboard_link)[1].strip }
       columns = all_labels.select { |l| l.match(@@huboard_column) }
       labels = all_labels - repo_links - columns
-      milestones = octokit_connection.list_milestones(master_repo_name).collect {|h|
+      milestones = octokit_connection.list_milestones(master_repo_name).collect {|octohash|
+        {
+          "description" => octohash["description"],
+          "due_on" => octohash["due_on"],
+          "number" => octohash["number"],
+          "state" => octohash["state"],
+          "title" => octohash["title"]
+        }
       }
 
       Configuration.new master: master_repo_name, repositories: repositories, milestones: milestones, columns: columns, labels: labels

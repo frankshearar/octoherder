@@ -126,15 +126,31 @@ module OctoHerder
          }]
       }
 
-      it "can be done" do
+      before :each do
         connection.stub(:list_milestones).and_return(LIST_MILESTONES_FOR_A_REPOSITORY)
         connection.stub(:labels).and_return(labels)
-        connection.should_receive(:list_milestones)
-        connection.should_receive(:labels)
+      end
+
+      it "can be done" do
+        connection.should_receive(:labels).ordered
+        connection.should_receive(:list_milestones).ordered
+
         c = Configuration.generate_configuration connection, "me/mine"
         expect(c.labels).to eq(['0.5', 'critical'])
         expect(c.repositories).to eq(['me/other'])
         expect(c.columns).to eq(['0 - Backlog'])
+      end
+
+      it "should collect existing milestone information" do
+        c = Configuration.generate_configuration connection, "me/mine"
+        expect(c.milestones.length).to equal 1
+        m = c.milestones.first
+        expect(m).to eq({
+          "number" => 1,
+          "state" => "open",
+          "title" => "v1.0",
+          "description" => "",
+          "due_on" => nil})
       end
 
       it "can write to a file" do
