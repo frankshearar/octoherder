@@ -80,17 +80,24 @@ module OctoHerder
       ([master] + repositories).map { |str|
         Octokit::Repository.new str
       }.each { |repo|
-        actual_milestones = octokit_connection.list_milestones(repo).map { |m|
-          m.fetch('title', '')
-        }
-        milestones.reject { |m| actual_milestones.include? m['title'] }.each { |m|
+        ms = octokit_connection.list_milestones(repo)
+
+        # Map milestone titles to IDs
+        actual_milestones = Hash[ms.map { |m|
+          [m.fetch('title'), m.fetch('number')]
+        }]
+
+        milestone_titles = actual_milestones.keys
+
+        milestones.reject { |m| milestone_titles.include? m.fetch('title') }.each { |m|
           opts = to_octokit_opts m
-          octokit_connection.create_milestone(repo, m['title'], opts)
+          octokit_connection.create_milestone(repo, m.fetch('title'), opts)
         }
 
-        milestones.select { |m| actual_milestones.include? m['title'] }.each { |m|
+        milestones.select { |m| milestone_titles.include? m.fetch('title') }.each { |m|
+          milestone_number = actual_milestones[m.fetch('title')]
           opts = to_octokit_opts m
-          octokit_connection.update_milestone(repo, m['title'], opts)
+          octokit_connection.update_milestone(repo, milestone_number, opts)
         }
       }
       self
