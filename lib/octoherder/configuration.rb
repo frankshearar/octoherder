@@ -105,7 +105,7 @@ module OctoHerder
     def to_octokit_opts hash
       opts = hash.dup
       opts.delete 'title'
-      opts['due_on'] = opts['due_on'].iso8601 if opts.has_key? 'due_on'
+      opts['due_on'] = opts['due_on'].iso8601 if opts['due_on']
       opts
     end
 
