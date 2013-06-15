@@ -38,7 +38,6 @@ module OctoHerder
         {
           "description" => octohash["description"],
           "due_on" => octohash["due_on"],
-          "number" => octohash["number"],
           "state" => octohash["state"],
           "title" => octohash["title"]
         }
