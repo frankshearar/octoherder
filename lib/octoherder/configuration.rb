@@ -61,13 +61,19 @@ module OctoHerder
     # Ensure that every repository has the specified labels. Labels always
     # have the same, neutral, colour.
     def update_labels octokit_connection
-      ([master] + repositories).map {|str|
+      ([master] + repositories).map { |str|
         Octokit::Repository.new str
       }.each { |r|
         actual_labels = octokit_connection.labels r
-        (labels - actual_labels).each { |label|
+        ((labels + columns) - actual_labels).each { |label|
           octokit_connection.add_label(r, label, NEUTRAL_TONE)
         }
+      }
+    end
+
+    def update_link_labels octokit_connection
+      repositories.map { | str |
+        octokit_connection.add_label(master, "Link <=> #{str}", NEUTRAL_TONE)
       }
     end
 

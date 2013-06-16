@@ -51,6 +51,8 @@ HELP
     def run octokit_client, opts
       if opts[:input_file_given] then
         c = Configuration.read_string opts[:input_file].read
+        c.update_link_labels octokit_client
+        c.update_labels octokit_client
         c.update_milestones octokit_client
       end
 

@@ -32,9 +32,10 @@ module OctoHerder
       let(:conf) { Configuration.read_file conf_file }
       let(:source) { YAML.load_file conf_file }
       let (:master) { source.fetch('master') }
-      let (:labels) { source.fetch('labels', []) }
-      let (:linked_repos) { source.fetch('repositories', []) }
-      let (:milestones) { source.fetch('milestones', []) }
+      let (:labels) { source.fetch('labels') }
+      let (:columns) { source.fetch('columns') }
+      let (:linked_repos) { source.fetch('repositories') }
+      let (:milestones) { source.fetch('milestones') }
       let (:repo_count) { ([master] + linked_repos).length }
 
       it "can read in the master repo name" do
@@ -68,6 +69,17 @@ module OctoHerder
         conf.update_labels connection
       end
 
+      it "should add columns to repositories that lack some" do
+        connection.stub(:labels).and_return([], [], [])
+        connection.stub(:add_label)
+        connection.should_receive(:labels).exactly(repo_count).times
+        columns.each { |label|
+          connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), label, OctoHerder::NEUTRAL_TONE)
+        }
+
+        conf.update_labels connection
+      end
+
       it "should ask all repositories for their milestones" do
         connection.stub(:list_milestones).and_return(LIST_MILESTONES_FOR_A_REPOSITORY,
                                                      [],
@@ -75,6 +87,17 @@ module OctoHerder
         connection.stub(:create_milestone)
         connection.should_receive(:list_milestones).exactly(repo_count).times
         conf.update_milestones connection
+      end
+
+      it "should add any huboard repository links" do
+        connection.stub(:list_milestones).and_return(LIST_MILESTONES_FOR_A_REPOSITORY)
+        connection.stub(:create_milestone)
+        connection.stub(:add_label)
+        # This happens to also check that we don't add any link labels to the
+        # linked repositories.
+        connection.should_receive(:add_label).exactly(conf.repositories.size).times
+
+        conf.update_link_labels connection
       end
 
       it "should add all missing milestones to all repositories" do

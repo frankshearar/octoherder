@@ -69,7 +69,15 @@ USAGE
         it "should read in the input file" do
           # We could only ask for the master repository's milestones if we
           # correctly read the sample config file.
+          conf = Configuration.read_file "spec/data/sample.yml"
+          n = conf.repositories.size
+          expected_label_count = n + ((n + 1) * (conf.labels.size + conf.columns.size))
+
+          kitty.stub(:labels).and_return([])
+          kitty.stub(:milestones).and_return([])
           kitty.should_receive(:list_milestones).with(an_instance_of(Octokit::Repository))
+          kitty.should_receive(:add_label).exactly(expected_label_count).times
+          kitty.should_receive(:create_milestone)
         end
       end
 
