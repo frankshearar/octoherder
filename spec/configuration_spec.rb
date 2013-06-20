@@ -147,7 +147,6 @@ module OctoHerder
         expect(c.milestones.length).to equal 1
         m = c.milestones.first
         expect(m).to eq({
-          "number" => 1,
           "state" => "open",
           "title" => "v1.0",
           "description" => "",

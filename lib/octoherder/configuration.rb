@@ -38,7 +38,6 @@ module OctoHerder
         {
           "description" => octohash["description"],
           "due_on" => octohash["due_on"],
-          "number" => octohash["number"],
           "state" => octohash["state"],
           "title" => octohash["title"]
         }
@@ -106,7 +105,7 @@ module OctoHerder
     def to_octokit_opts hash
       opts = hash.dup
       opts.delete 'title'
-      opts['due_on'] = opts['due_on'].iso8601 if opts.has_key? 'due_on'
+      opts['due_on'] = opts['due_on'].iso8601 if opts['due_on']
       opts
     end
 
