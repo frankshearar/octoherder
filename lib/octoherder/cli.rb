@@ -44,7 +44,7 @@ HELP
       auth = {}
       auth[:login] = cli_opts[:user] if cli_opts[:user_given]
       auth[:password] = cli_opts[:password] if cli_opts[:password_given]
-      auth[:oauth] = cli_opts[:oauth_token] if cli_opts[:oauth_token_given]
+      auth[:oauth_token] = cli_opts[:oauth_token] if cli_opts[:oauth_token_given]
       auth
     end
 
