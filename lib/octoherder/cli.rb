@@ -1,4 +1,5 @@
 require 'octoherder'
+require 'highline'
 require 'trollop'
 
 
@@ -11,7 +12,7 @@ module OctoHerder
 OctoHerder helps you manage your multi-repository project.
 
 Usage:
-    
+
     octoherder [options]
 where [options] are:
 HELP
@@ -36,6 +37,11 @@ HELP
 
     def self.run(args)
       opts = parse_argv(args)
+      if ! opts[:password_given] then
+        opts[:password_given] = true
+        opts[:password] = HighLine.new.ask("Enter password: ") { |q| q.echo = false }
+      end
+
       kitty = Octokit.new(octoauth(opts))
       CLI.new.run kitty, opts
     end
