@@ -1,7 +1,7 @@
 require 'hamsterdam'
 require 'octokit.rb'
 require 'time'
-require 'yaml'
+require 'safe_yaml'
 
 module OctoHerder
   NEUTRAL_TONE = '#cccccc'
