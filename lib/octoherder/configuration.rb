@@ -3,6 +3,8 @@ require 'octokit.rb'
 require 'time'
 require 'safe_yaml'
 
+SafeYAML::OPTIONS[:default_mode] = :safe
+
 module OctoHerder
   NEUTRAL_TONE = '#cccccc'
 
@@ -105,7 +107,10 @@ module OctoHerder
     def to_octokit_opts hash
       opts = hash.dup
       opts.delete 'title'
-      opts['due_on'] = opts['due_on'].iso8601 if opts['due_on']
+      # Sometimes dates get read in and autoconverted to a Time and sometimes not.
+      if opts['due_on'] && opts['due_on'].kind_of?(String) then
+        opts['due_on'] = DateTime.iso8601(opts['due_on'])
+      end
       opts
     end
 

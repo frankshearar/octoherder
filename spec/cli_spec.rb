@@ -129,10 +129,17 @@ USAGE
         it "will prompt for a password if none given" do
           orig_stdin = $stdin
           begin
-            $stdin = StringIO.new("1234")
-            run(["--user", "me"], kitty)
-            expect($stdout.readline).to include("Password")
-            $stdin.puts(password)
+            $stdin = StringIO.new("1234", "r")
+            orig_stdout = $stdout
+            begin
+              $stdout = StringIO.new("", "w+")
+
+              CLI.run(["--user", "me"])
+              $stdout.rewind
+              expect($stdout.read).to include("password")
+            ensure
+              $stdout = orig_stdout
+            end
           ensure
             $stdin = orig_stdin
           end
