@@ -1,4 +1,5 @@
 source 'http://rubygems.org'
+gem 'highline'
 gem 'json', '~> 1.7.7'
 gem 'octokit'
 gem 'rake'

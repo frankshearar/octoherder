@@ -105,7 +105,7 @@ module OctoHerder
         connection.stub(:create_milestone)
 
           connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-1', {'state' => 'closed'}).exactly(repo_count).times
-          connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-2', {'due_on' => '2011-04-10T20:09:31Z'}).exactly(repo_count).times
+          connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-2', {'due_on' => Time.iso8601('2011-04-10T20:09:31Z')}).exactly(repo_count).times
           connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-3', {'state' => 'open', 'description' => 'The third step in total world domination.'}).exactly(repo_count).times
 
         conf.update_milestones connection
@@ -118,7 +118,7 @@ module OctoHerder
         connection.stub(:update_milestone)
 
         connection.should_receive(:update_milestone).with(an_instance_of(Octokit::Repository), 1, {'state' => 'closed'}).exactly(repo_count).times
-        connection.should_receive(:update_milestone).with(an_instance_of(Octokit::Repository), 2, {'due_on' => '2011-04-10T20:09:31Z'}).exactly(repo_count).times
+        connection.should_receive(:update_milestone).with(an_instance_of(Octokit::Repository), 2, {'due_on' => Time.iso8601('2011-04-10T20:09:31Z')}).exactly(repo_count).times
         connection.should_receive(:update_milestone).with(an_instance_of(Octokit::Repository), 3, {'state' => 'open', 'description' => 'The third step in total world domination.'}).exactly(repo_count).times
 
         conf.update_milestones connection

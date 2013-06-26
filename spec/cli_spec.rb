@@ -18,7 +18,7 @@ module OctoHerder
 OctoHerder helps you manage your multi-repository project.
 
 Usage:
-    
+
     octoherder [options]
 where [options] are:
   --input-file, -i <filename/uri>:   Path to the canonical project setup
@@ -132,6 +132,25 @@ USAGE
           kitty.stub(:password)
           kitty.should_receive(:password).with(password)
           run(["--user", "me", "--password", password], kitty)
+        end
+
+        it "will prompt for a password if none given" do
+          orig_stdin = $stdin
+          begin
+            $stdin = StringIO.new("1234", "r")
+            orig_stdout = $stdout
+            begin
+              $stdout = StringIO.new("", "w+")
+
+              CLI.run(["--user", "me"])
+              $stdout.rewind
+              expect($stdout.read).to include("password")
+            ensure
+              $stdout = orig_stdout
+            end
+          ensure
+            $stdin = orig_stdin
+          end
         end
       end
     end
