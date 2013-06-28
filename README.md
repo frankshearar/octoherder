@@ -15,7 +15,7 @@ How do I use it?
 
 First decide what your master repository will be. If you're a huboard user, choose the repository that holds the `Link <=> other/repo` labels. Octoherder will use this information during its setup.
 
-Run `octoherder -o definitions.yml -r master/repo -u myusername -p`. That will prompt you for your GitHub password, and produce a YAML file looking something like this:
+Run `octoherder -o definitions.yml -r master/repo -u myusername`. That will prompt you for your GitHub password, and produce a YAML file looking something like this:
 
 ````yaml
 ---
@@ -42,9 +42,7 @@ columns:
   - 4 - Done
 ````
 
-__Everything below here is vapourware!__
-
-Adjust your milestones as necessary, and update your repositories with their new milestones with `octoherder -i definitions.yml -u myusername -p`. Done!
+Adjust your milestones as necessary, and update your repositories with their new milestones with `octoherder -i definitions.yml -u myusername`. Done!
 
 Licence
 -------
