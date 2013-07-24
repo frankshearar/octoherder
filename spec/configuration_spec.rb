@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'rspec'
 require 'octoherder/configuration'
 require 'data/sample-github-responses'
+require 'ostruct'
 
 module OctoHerder
   describe Configuration do
@@ -89,13 +90,14 @@ module OctoHerder
         conf.update_milestones connection
       end
 
-      it "should add any huboard repository links" do
+      it "should add any missing huboard repository links" do
         connection.stub(:list_milestones).and_return(LIST_MILESTONES_FOR_A_REPOSITORY)
         connection.stub(:create_milestone)
+        connection.stub(:labels).and_return([OpenStruct.new(name: "Link <=> " + conf.repositories.first)])
         connection.stub(:add_label)
         # This happens to also check that we don't add any link labels to the
         # linked repositories.
-        connection.should_receive(:add_label).exactly(conf.repositories.size).times
+        connection.should_receive(:add_label).exactly(conf.repositories.size - 1).times
 
         conf.update_link_labels connection
       end
