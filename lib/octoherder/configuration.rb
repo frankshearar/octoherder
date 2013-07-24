@@ -66,16 +66,30 @@ module OctoHerder
       ([master] + repositories).map { |str|
         Octokit::Repository.new str
       }.each { |r|
-        actual_labels = octokit_connection.labels r
-        ((labels + columns) - actual_labels).each { |label|
-          octokit_connection.add_label(r, label, NEUTRAL_TONE)
-        }
+        add_new_labels octokit_connection, r, labels + columns
       }
     end
 
     def update_link_labels octokit_connection
-      repositories.map { | str |
-        octokit_connection.add_label(master, "Link <=> #{str}", NEUTRAL_TONE)
+      actual_labels = octokit_connection.labels(Octokit::Repository.new(master)).map(&:name)
+      link_labels = repositories.map { | str | "Link <=> #{str}" }
+      add_new_labels octokit_connection, master, link_labels
+    end
+
+    def add_new_labels octokit_connection, repository, labels
+      existing_labels = octokit_connection.labels(repository).map(&:name)
+
+      (labels - existing_labels).each { | label |
+        begin
+          octokit_connection.add_label(repository, label, NEUTRAL_TONE)
+        rescue Octokit::Error => e
+          # Referencing an instvar is disgusting (and fragile). But how else do
+          # we get this very useful debugging info? The response body isn't
+          # displayed in #inspect.
+          puts "Label: #{label.inspect}"
+          puts e.instance_variable_get("@response_body").inspect
+          raise e
+        end
       }
     end
 
