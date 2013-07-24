@@ -6,7 +6,7 @@ require 'safe_yaml'
 SafeYAML::OPTIONS[:default_mode] = :safe
 
 module OctoHerder
-  NEUTRAL_TONE = '#cccccc'
+  NEUTRAL_TONE = 'cccccc'
 
   Configuration = Hamsterdam::Struct.define(:master, :repositories, :milestones, :columns, :labels)
   class Configuration
