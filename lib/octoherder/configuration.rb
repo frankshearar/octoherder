@@ -101,7 +101,9 @@ module OctoHerder
       ([master] + repositories).map { |str|
         Octokit::Repository.new str
       }.each { |repo|
-        ms = octokit_connection.list_milestones(repo)
+        # GitHub by default only shows open milestones. We don't want to try recreate
+        # a closed milestone, so we have to explicitly ask for closed milestones.
+        ms = octokit_connection.list_milestones(repo, state: 'open') + octokit_connection.list_milestones(repo, state: 'closed')
 
         # Map milestone titles to IDs
         actual_milestones = Hash[ms.map { |m|
@@ -112,7 +114,16 @@ module OctoHerder
 
         milestones.reject { |m| milestone_titles.include? m.fetch('title') }.each { |m|
           opts = to_octokit_opts m
-          octokit_connection.create_milestone(repo, m.fetch('title'), opts)
+          begin
+            octokit_connection.create_milestone(repo, m.fetch('title'), opts)
+          rescue Octokit::Error => e
+            # Referencing an instvar is disgusting (and fragile). But how else do
+            # we get this very useful debugging info? The response body isn't
+            # displayed in #inspect.
+            puts "Milestone: #{m.fetch('title').inspect}"
+            puts e.instance_variable_get("@response_body").inspect
+            raise e
+          end
         }
 
         milestones.select { |m| milestone_titles.include? m.fetch('title') }.each { |m|

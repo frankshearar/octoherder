@@ -86,7 +86,7 @@ module OctoHerder
                                                      [],
                                                      [])
         connection.stub(:create_milestone)
-        connection.should_receive(:list_milestones).exactly(repo_count).times
+        connection.should_receive(:list_milestones).exactly(repo_count * ['open', 'closed'].size).times
         conf.update_milestones connection
       end
 
@@ -109,6 +109,16 @@ module OctoHerder
           connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-1', {'state' => 'closed'}).exactly(repo_count).times
           connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-2', {'due_on' => Time.iso8601('2011-04-10T20:09:31Z')}).exactly(repo_count).times
           connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-3', {'state' => 'open', 'description' => 'The third step in total world domination.'}).exactly(repo_count).times
+
+        conf.update_milestones connection
+      end
+
+      it "should not try add a closed milestone" do
+        connection.stub(:list_milestones).with(an_instance_of(Octokit::Repository), {state: 'open'}).and_return(LIST_MILESTONES_FOR_A_REPOSITORY)
+        connection.stub(:list_milestones).with(an_instance_of(Octokit::Repository), {state: 'closed'}).and_return(LIST_CLOSED_MILESTONES_FOR_A_REPOSITORY)
+        connection.stub(:create_milestone)
+
+        connection.should_not_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-1', {'due_on' => Time.iso8601('2011-04-10T20:09:31Z')})
 
         conf.update_milestones connection
       end

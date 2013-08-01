@@ -75,7 +75,7 @@ USAGE
 
           kitty.stub(:labels).and_return([])
           kitty.stub(:milestones).and_return([])
-          kitty.should_receive(:list_milestones).with(an_instance_of(Octokit::Repository))
+          kitty.should_receive(:list_milestones).with(an_instance_of(Octokit::Repository), anything).at_least(1)
           kitty.should_receive(:add_label).exactly(expected_label_count).times
           kitty.should_receive(:create_milestone)
         end
