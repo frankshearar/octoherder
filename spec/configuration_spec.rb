@@ -33,7 +33,7 @@ module OctoHerder
       let(:conf) { Configuration.read_file conf_file }
       let(:source) { YAML.load_file conf_file }
       let (:master) { source.fetch('master') }
-      let (:labels) { source.fetch('labels') }
+      let (:labels) { source.fetch('labels').map(&:to_s) }
       let (:columns) { source.fetch('columns') }
       let (:linked_repos) { source.fetch('repositories') }
       let (:milestones) { source.fetch('milestones') }
@@ -57,6 +57,10 @@ module OctoHerder
 
       it "can read in the milestones" do
         expect(conf.milestones.count).to equal(source['milestones'].count)
+      end
+
+      it "should treat all labels as Strings" do
+        expect(conf.labels).to eq(conf.labels.map(&:to_s))
       end
 
       it "should add labels to repositories that lack some" do

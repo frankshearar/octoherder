@@ -23,7 +23,7 @@ module OctoHerder
 
       master = data.fetch('master')
       columns = data.fetch('columns', [])
-      labels = data.fetch('labels', [])
+      labels = data.fetch('labels', []).map(&:to_s)
       milestones = data.fetch('milestones', [])
       repositories = data.fetch('repositories', [])
       Configuration.new master: master, repositories: repositories, milestones: milestones, columns: columns, labels: labels
