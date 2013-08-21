@@ -81,6 +81,33 @@ module OctoHerder
         conf.update_labels connection
       end
 
+      context "with pre-existing labels" do
+        let (:existing_labels) { [{
+                                    "url" => "https =>//api.github.com/repos/me/mine/labels/critical",
+                                    "name" => "critical",
+                                    "color" => "ff0000"
+                                  }] }
+
+        before :each do
+          connection.stub(:labels).and_return(existing_labels)
+          connection.stub(:add_label)
+          connection.stub(:delete_label)
+        end
+
+        it "should add missing labels with the colours of those in the master repo" do
+          connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), 'critical', 'ff0000')
+
+          conf.update_labels connection
+        end
+
+        it "should change existing labels to match the colours of those in the master repo" do
+          connection.should_receive(:delete_label).with(an_instance_of(Octokit::Repository), 'critical').ordered
+          connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), 'critical', 'ff0000')
+
+          conf.update_labels connection
+        end
+      end
+
       it "should ask all repositories for their milestones" do
         connection.stub(:list_milestones).and_return(LIST_MILESTONES_FOR_A_REPOSITORY,
                                                      [],
