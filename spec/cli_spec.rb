@@ -1,8 +1,6 @@
 require 'spec_helper'
 require 'octoherder'
-require 'rspec'
 require 'tempfile'
-require 'data/sample-github-responses'
 
 module OctoHerder
   describe CLI do

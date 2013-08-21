@@ -1,8 +1,5 @@
 require 'spec_helper'
-require 'rspec'
 require 'octoherder/configuration'
-require 'data/sample-github-responses'
-require 'ostruct'
 
 module OctoHerder
   describe Configuration do
