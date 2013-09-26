@@ -59,8 +59,8 @@ module OctoHerder
       }
     end
 
-    # Ensure that every repository has the specified labels. Labels always
-    # have the same, neutral, colour.
+    # Ensure that every repository has the specified labels. Labels' colours
+    # match those of the primary repository.
     def update_labels octokit_connection
       ([master] + repositories).map { |str|
         Octokit::Repository.new str
@@ -70,17 +70,25 @@ module OctoHerder
     end
 
     def update_link_labels octokit_connection
-      actual_labels = octokit_connection.labels(Octokit::Repository.new(master)).map(&:name)
       link_labels = repositories.map { | str | "Link <=> #{str}" }
-      add_new_labels octokit_connection, master, link_labels
+      add_new_labels octokit_connection, Octokit::Repository.new(master), link_labels
     end
 
     def add_new_labels octokit_connection, repository, labels
-      existing_labels = octokit_connection.labels(repository).map(&:name)
+      master_labels = Hash[octokit_connection.labels(Octokit::Repository.new(master)).map {|l| [l.name, l.color]}]
 
-      (labels - existing_labels).each { | label |
+      existing_labels = octokit_connection.labels(repository).map {|l| [l.name, l.color]}
+      existing_labels.each { |name, colour|
+        target_colour = master_labels.fetch(name, NEUTRAL_TONE)
+        if colour != target_colour then
+          octokit_connection.update_label(repository, name, {color: target_colour})
+        end
+      }
+
+      existing_label_names = existing_labels.map(&:first)
+      (labels - existing_label_names).each { | label |
         begin
-          octokit_connection.add_label(repository, label, NEUTRAL_TONE)
+          octokit_connection.add_label(repository, label, {color: master_labels.fetch(label, NEUTRAL_TONE)})
         rescue Octokit::Error => e
           # Referencing an instvar is disgusting (and fragile). But how else do
           # we get this very useful debugging info? The response body isn't
