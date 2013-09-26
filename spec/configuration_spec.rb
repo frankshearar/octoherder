@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'octoherder/configuration'
+require 'hashie'
 
 module OctoHerder
   describe Configuration do
@@ -187,7 +188,7 @@ module OctoHerder
            "url" => "https =>//api.github.com/repos/me/mine/labels/critical",
            "name" => "critical",
            "color" => "ff0000"
-         }]
+         }].map { |h| Hashie::Mash.new h }
       }
 
       before :each do

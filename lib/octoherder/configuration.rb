@@ -1,4 +1,3 @@
-require 'hamsterdam'
 require 'octokit.rb'
 require 'time'
 require 'safe_yaml'
@@ -8,7 +7,7 @@ SafeYAML::OPTIONS[:default_mode] = :safe
 module OctoHerder
   NEUTRAL_TONE = 'cccccc'
 
-  Configuration = Hamsterdam::Struct.define(:master, :repositories, :milestones, :columns, :labels)
+  Configuration = Struct.new(:master, :repositories, :milestones, :columns, :labels)
   class Configuration
     def self.read_file path
       File.open(path.to_s, "r") { |f| self.read_string f.read }
@@ -26,7 +25,7 @@ module OctoHerder
       labels = data.fetch('labels', []).map(&:to_s)
       milestones = data.fetch('milestones', [])
       repositories = data.fetch('repositories', [])
-      Configuration.new master: master, repositories: repositories, milestones: milestones, columns: columns, labels: labels
+      Configuration.new master, repositories, milestones, columns, labels
     end
 
     def self.generate_configuration octokit_connection, master_repo_name
@@ -45,7 +44,7 @@ module OctoHerder
         }
       }
 
-      Configuration.new master: master_repo_name, repositories: repositories, milestones: milestones, columns: columns, labels: labels
+      Configuration.new master_repo_name, repositories, milestones, columns, labels
     end
 
     def write_file path
