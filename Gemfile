@@ -1,9 +1,9 @@
 source 'http://rubygems.org'
+gem 'hashie'
 gem 'highline'
 gem 'json', '~> 1.7.7'
 gem 'octokit'
 gem 'rake'
-gem 'hamsterdam'
 gem 'safe_yaml'
 gem 'trollop'
 
