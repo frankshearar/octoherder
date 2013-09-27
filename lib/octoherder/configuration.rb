@@ -1,4 +1,3 @@
-require 'hamsterdam'
 require 'octokit.rb'
 require 'time'
 require 'safe_yaml'
@@ -8,7 +7,7 @@ SafeYAML::OPTIONS[:default_mode] = :safe
 module OctoHerder
   NEUTRAL_TONE = 'cccccc'
 
-  Configuration = Hamsterdam::Struct.define(:master, :repositories, :milestones, :columns, :labels)
+  Configuration = Struct.new(:master, :repositories, :milestones, :columns, :labels)
   class Configuration
     def self.read_file path
       File.open(path.to_s, "r") { |f| self.read_string f.read }
@@ -23,10 +22,10 @@ module OctoHerder
 
       master = data.fetch('master')
       columns = data.fetch('columns', [])
-      labels = data.fetch('labels', [])
+      labels = data.fetch('labels', []).map(&:to_s)
       milestones = data.fetch('milestones', [])
       repositories = data.fetch('repositories', [])
-      Configuration.new master: master, repositories: repositories, milestones: milestones, columns: columns, labels: labels
+      Configuration.new master, repositories, milestones, columns, labels
     end
 
     def self.generate_configuration octokit_connection, master_repo_name
@@ -45,7 +44,7 @@ module OctoHerder
         }
       }
 
-      Configuration.new master: master_repo_name, repositories: repositories, milestones: milestones, columns: columns, labels: labels
+      Configuration.new master_repo_name, repositories, milestones, columns, labels
     end
 
     def write_file path
@@ -60,8 +59,8 @@ module OctoHerder
       }
     end
 
-    # Ensure that every repository has the specified labels. Labels always
-    # have the same, neutral, colour.
+    # Ensure that every repository has the specified labels. Labels' colours
+    # match those of the primary repository.
     def update_labels octokit_connection
       ([master] + repositories).map { |str|
         Octokit::Repository.new str
@@ -71,17 +70,25 @@ module OctoHerder
     end
 
     def update_link_labels octokit_connection
-      actual_labels = octokit_connection.labels(Octokit::Repository.new(master)).map(&:name)
       link_labels = repositories.map { | str | "Link <=> #{str}" }
-      add_new_labels octokit_connection, master, link_labels
+      add_new_labels octokit_connection, Octokit::Repository.new(master), link_labels
     end
 
     def add_new_labels octokit_connection, repository, labels
-      existing_labels = octokit_connection.labels(repository).map(&:name)
+      master_labels = Hash[octokit_connection.labels(Octokit::Repository.new(master)).map {|l| [l.name, l.color]}]
 
-      (labels - existing_labels).each { | label |
+      existing_labels = octokit_connection.labels(repository).map {|l| [l.name, l.color]}
+      existing_labels.each { |name, colour|
+        target_colour = master_labels.fetch(name, NEUTRAL_TONE)
+        if colour != target_colour then
+          octokit_connection.update_label(repository, name, {color: target_colour})
+        end
+      }
+
+      existing_label_names = existing_labels.map(&:first)
+      (labels - existing_label_names).each { | label |
         begin
-          octokit_connection.add_label(repository, label, NEUTRAL_TONE)
+          octokit_connection.add_label(repository, label, {color: master_labels.fetch(label, NEUTRAL_TONE)})
         rescue Octokit::Error => e
           # Referencing an instvar is disgusting (and fragile). But how else do
           # we get this very useful debugging info? The response body isn't

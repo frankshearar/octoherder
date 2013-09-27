@@ -26,9 +26,6 @@ GEM
     guard-rspec (3.0.1)
       guard (>= 1.8)
       rspec (~> 2.13)
-    hamster (0.4.3)
-    hamsterdam (1.0.8)
-      hamster
     hashie (2.0.5)
     highline (1.6.19)
     json (1.7.7)
@@ -84,7 +81,7 @@ PLATFORMS
 DEPENDENCIES
   coveralls
   guard-rspec
-  hamsterdam
+  hashie
   highline
   json (~> 1.7.7)
   octokit

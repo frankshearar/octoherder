@@ -1,3 +1,6 @@
+require 'ostruct'
+require 'rspec'
+require 'data/sample-github-responses'
 require 'simplecov'
 SimpleCov.start
 

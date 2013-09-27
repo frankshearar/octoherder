@@ -1,8 +1,6 @@
 require 'spec_helper'
-require 'rspec'
 require 'octoherder/configuration'
-require 'data/sample-github-responses'
-require 'ostruct'
+require 'hashie'
 
 module OctoHerder
   describe Configuration do
@@ -33,7 +31,7 @@ module OctoHerder
       let(:conf) { Configuration.read_file conf_file }
       let(:source) { YAML.load_file conf_file }
       let (:master) { source.fetch('master') }
-      let (:labels) { source.fetch('labels') }
+      let (:labels) { source.fetch('labels').map(&:to_s) }
       let (:columns) { source.fetch('columns') }
       let (:linked_repos) { source.fetch('repositories') }
       let (:milestones) { source.fetch('milestones') }
@@ -59,27 +57,10 @@ module OctoHerder
         expect(conf.milestones.count).to equal(source['milestones'].count)
       end
 
-      it "should add labels to repositories that lack some" do
-        connection.stub(:labels).and_return([], [], [])
-        connection.stub(:add_label)
-        connection.should_receive(:labels).exactly(repo_count).times
-        labels.each { |label|
-          connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), label, OctoHerder::NEUTRAL_TONE)
-        }
-
-        conf.update_labels connection
+      it "should treat all labels as Strings" do
+        expect(conf.labels).to eq(conf.labels.map(&:to_s))
       end
 
-      it "should add columns to repositories that lack some" do
-        connection.stub(:labels).and_return([], [], [])
-        connection.stub(:add_label)
-        connection.should_receive(:labels).exactly(repo_count).times
-        columns.each { |label|
-          connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), label, OctoHerder::NEUTRAL_TONE)
-        }
-
-        conf.update_labels connection
-      end
 
       it "should ask all repositories for their milestones" do
         connection.stub(:list_milestones).and_return(LIST_MILESTONES_FOR_A_REPOSITORY,
@@ -93,7 +74,16 @@ module OctoHerder
       it "should add any missing huboard repository links" do
         connection.stub(:list_milestones).and_return(LIST_MILESTONES_FOR_A_REPOSITORY)
         connection.stub(:create_milestone)
-        connection.stub(:labels).and_return([OpenStruct.new(name: "Link <=> " + conf.repositories.first)])
+
+        connection.stub(:labels) { |repo|
+          repo_name = "#{repo.username}/#{repo.name}"
+          if repo_name == master then
+            [{name: "Link <=> " + conf.repositories.first}].map {|h| Hashie::Mash.new h}
+          else
+            []
+          end
+        }
+
         connection.stub(:add_label)
         # This happens to also check that we don't add any link labels to the
         # linked repositories.
@@ -106,9 +96,9 @@ module OctoHerder
         connection.stub(:list_milestones).and_return(LIST_MILESTONES_FOR_A_REPOSITORY)
         connection.stub(:create_milestone)
 
-          connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-1', {'state' => 'closed'}).exactly(repo_count).times
-          connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-2', {'due_on' => Time.iso8601('2011-04-10T20:09:31Z')}).exactly(repo_count).times
-          connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-3', {'state' => 'open', 'description' => 'The third step in total world domination.'}).exactly(repo_count).times
+        connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-1', {'state' => 'closed'}).exactly(repo_count).times
+        connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-2', {'due_on' => Time.iso8601('2011-04-10T20:09:31Z')}).exactly(repo_count).times
+        connection.should_receive(:create_milestone).with(an_instance_of(Octokit::Repository), 'milestone-3', {'state' => 'open', 'description' => 'The third step in total world domination.'}).exactly(repo_count).times
 
         conf.update_milestones connection
       end
@@ -159,7 +149,7 @@ module OctoHerder
            "url" => "https =>//api.github.com/repos/me/mine/labels/critical",
            "name" => "critical",
            "color" => "ff0000"
-         }]
+         }].map { |h| Hashie::Mash.new h }
       }
 
       before :each do
@@ -198,6 +188,105 @@ module OctoHerder
           expect(new_conf).to eq(conf)
         ensure
           FileUtils.rm(target_file) if File.exist?(target_file)
+        end
+      end
+    end
+
+    context "when updating master repository" do
+      let (:master) { "my/master" }
+      let (:repositories) { ["my/slave"] }
+      let (:slave) { repositories.first }
+      let (:milestones) { [] }
+      let (:columns) { ["0 - Backlog"] }
+      let (:labels) { ["existing-red-label", "new-blue-label"] }
+      let (:conf) {
+        Configuration.new master, repositories, milestones, columns, labels
+      }
+
+      before :each do
+        connection.stub(:add_label)
+        connection.stub(:update_label)
+        connection.stub(:labels).and_return([])
+
+      end
+
+      it "should add missing columns" do
+        connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), "0 - Backlog", {color: "cccccc"})
+
+        conf.update_labels connection
+      end
+    end
+
+    context "when updating linked repositories" do
+      let (:master) { "my/master" }
+      let (:repositories) { ["my/slave"] }
+      let (:slave) { repositories.first }
+      let (:milestones) { [] }
+      let (:columns) { [] }
+      let (:labels) { ["existing-red-label", "new-blue-label"] }
+      let (:conf) {
+        Configuration.new master, repositories, milestones, columns, labels
+      }
+
+      before :each do
+       connection.stub(:add_label)
+        connection.stub(:update_label)
+        connection.stub(:labels) { |repo|
+          repo_name = "#{repo.username}/#{repo.name}"
+          case repo_name
+          when master then master_labels
+          when slave then slave_labels
+          else fail("Unknown repository #{repo_name}")
+          end
+        }
+      end
+
+      context "with existing labels" do
+        let (:master_labels) {
+          [{
+             "url" => "https =>//api.github.com/repos/me/mine/labels/existing-red-label",
+             "name" => "existing-red-label",
+             "color" => "ff0000"
+           }].map { |h| Hashie::Mash.new h }
+        }
+
+        let (:slave_labels) {
+          [{
+             "url" => "https =>//api.github.com/repos/me/mine/labels/existing-red-label",
+             "name" => "existing-red-label",
+             "color" => "cccccc"
+           }].map { |h| Hashie::Mash.new h }
+        }
+
+        it "should update labels in a linked repo" do
+          connection.should_receive(:update_label).with(an_instance_of(Octokit::Repository), master_labels.first.name, {color: 'ff0000'})
+
+          conf.update_labels connection
+        end
+      end
+
+      context "with missing labels" do
+        let (:columns) { ["0 - Backlog"] }
+        let (:master_labels) {
+          [{
+             "url" => "https =>//api.github.com/repos/me/mine/labels/new-blue-label",
+             "name" => "new-blue-label",
+             "color" => "0000ff"
+           },
+           { # Huboard column tags
+             "url" => "https =>//api.github.com/repos/me/mine/labels/0 - Backlog",
+             "name" => "0 - Backlog",
+             "color" => "cccccc"
+           }].map { |h| Hashie::Mash.new h }
+        }
+
+        let (:slave_labels) { [] }
+
+        it "should add labels to a linked repo with matching colour" do
+          connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), "new-blue-label", {color: "0000ff"})
+          connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), "0 - Backlog", {color: "cccccc"})
+
+          conf.update_labels connection
         end
       end
     end
