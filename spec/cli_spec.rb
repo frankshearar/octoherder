@@ -10,7 +10,7 @@ module OctoHerder
 
     context "bin/octoherder" do
       let(:conf) { Configuration.read_file 'spec/data/sample.yml' }
-      let (:kitty) { mock :octokit_client }
+      let (:kitty) { double :octokit_client }
       let (:version) { "octoherder #{OctoHerder::VERSION}\n" }
       let (:usage) {<<-USAGE
 OctoHerder helps you manage your multi-repository project.

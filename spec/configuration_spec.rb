@@ -5,7 +5,7 @@ require 'hashie'
 module OctoHerder
   describe Configuration do
     let (:conf_file) { (Pathname.new(__FILE__).parent + "data/sample.yml").to_s }
-    let (:connection) { mock :octokit }
+    let (:connection) { double :octokit }
 
     it "should be instantiable" do
       Configuration.new
