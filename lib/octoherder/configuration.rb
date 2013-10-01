@@ -88,7 +88,7 @@ module OctoHerder
       existing_label_names = existing_labels.map(&:first)
       (labels - existing_label_names).each { | label |
         begin
-          octokit_connection.add_label(repository, label, {color: master_labels.fetch(label, NEUTRAL_TONE)})
+          octokit_connection.add_label(repository, label, master_labels.fetch(label, NEUTRAL_TONE))
         rescue Octokit::Error => e
           # Referencing an instvar is disgusting (and fragile). But how else do
           # we get this very useful debugging info? The response body isn't
@@ -105,9 +105,8 @@ module OctoHerder
     def update_milestones octokit_connection
       milestone_titles = milestones.map { |m| m.fetch('title', '') }
 
-      ([master] + repositories).map { |str|
-        Octokit::Repository.new str
-      }.each { |repo|
+      ([master] + repositories).each { |str|
+        repo = Octokit::Repository.new str
         # GitHub by default only shows open milestones. We don't want to try recreate
         # a closed milestone, so we have to explicitly ask for closed milestones.
         ms = octokit_connection.list_milestones(repo, state: 'open') + octokit_connection.list_milestones(repo, state: 'closed')

@@ -42,7 +42,7 @@ HELP
         opts[:password] = HighLine.new.ask("Enter password: ") { |q| q.echo = false }
       end
 
-      kitty = Octokit.new(octoauth(opts))
+      kitty = Octokit::Client.new(octoauth(opts))
       CLI.new.run kitty, opts
     end
 
