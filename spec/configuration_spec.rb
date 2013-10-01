@@ -211,7 +211,7 @@ module OctoHerder
       end
 
       it "should add missing columns" do
-        connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), "0 - Backlog", {color: "cccccc"})
+        connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), "0 - Backlog", "cccccc")
 
         conf.update_labels connection
       end
@@ -283,8 +283,8 @@ module OctoHerder
         let (:slave_labels) { [] }
 
         it "should add labels to a linked repo with matching colour" do
-          connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), "new-blue-label", {color: "0000ff"})
-          connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), "0 - Backlog", {color: "cccccc"})
+          connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), "new-blue-label", "0000ff")
+          connection.should_receive(:add_label).with(an_instance_of(Octokit::Repository), "0 - Backlog", "cccccc")
 
           conf.update_labels connection
         end
