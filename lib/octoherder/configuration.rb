@@ -81,6 +81,7 @@ module OctoHerder
       existing_labels.each { |name, colour|
         target_colour = master_labels.fetch(name, NEUTRAL_TONE)
         if colour != target_colour then
+          puts "#{repository}: updating label '#{name}' to #{target_colour}"
           octokit_connection.update_label(repository, name, {color: target_colour})
         end
       }
@@ -88,6 +89,7 @@ module OctoHerder
       existing_label_names = existing_labels.map(&:first)
       (labels - existing_label_names).each { | label |
         begin
+          puts "#{repository}: adding label '#{label}'"
           octokit_connection.add_label(repository, label, master_labels.fetch(label, NEUTRAL_TONE))
         rescue Octokit::Error => e
           # Referencing an instvar is disgusting (and fragile). But how else do
@@ -121,6 +123,7 @@ module OctoHerder
         milestones.reject { |m| milestone_titles.include? m.fetch('title') }.each { |m|
           opts = to_octokit_opts m
           begin
+            puts "#{str}: adding milestone '#{m.fetch('title')}'"
             octokit_connection.create_milestone(repo, m.fetch('title'), opts)
           rescue Octokit::Error => e
             # Referencing an instvar is disgusting (and fragile). But how else do
@@ -135,6 +138,7 @@ module OctoHerder
         milestones.select { |m| milestone_titles.include? m.fetch('title') }.each { |m|
           milestone_number = actual_milestones[m.fetch('title')]
           opts = to_octokit_opts m
+          puts "#{str}: updating milestone '#{m.fetch('title')}'"
           octokit_connection.update_milestone(repo, milestone_number, opts)
         }
       }
