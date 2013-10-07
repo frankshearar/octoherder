@@ -30,7 +30,7 @@ module OctoHerder
 
     def self.generate_configuration octokit_connection, master_repo_name
       all_labels = octokit_connection.labels(master_repo_name).
-        collect { |l| l.fetch('name', '') }
+        collect { |l| l['name'] }
       repo_links = all_labels.select { |l| l.match @@huboard_link }
       repositories = repo_links.map { |l| l.match(@@huboard_link)[1].strip }
       columns = all_labels.select { |l| l.match(@@huboard_column) }
@@ -115,30 +115,29 @@ module OctoHerder
 
         # Map milestone titles to IDs
         actual_milestones = Hash[ms.map { |m|
-          [m.fetch('title'), m.fetch('number')]
+          [m['title'], m['number']]
         }]
 
         milestone_titles = actual_milestones.keys
-
-        milestones.reject { |m| milestone_titles.include? m.fetch('title') }.each { |m|
+        milestones.reject { |m| milestone_titles.include? m['title'] }.each { |m|
           opts = to_octokit_opts m
           begin
-            puts "#{str}: adding milestone '#{m.fetch('title')}'"
-            octokit_connection.create_milestone(repo, m.fetch('title'), opts)
+            puts "#{str}: adding milestone '#{m['title']}'"
+            octokit_connection.create_milestone(repo, m['title'], opts)
           rescue Octokit::Error => e
             # Referencing an instvar is disgusting (and fragile). But how else do
             # we get this very useful debugging info? The response body isn't
             # displayed in #inspect.
-            puts "Milestone: #{m.fetch('title').inspect}"
+            puts "Milestone: #{m['title'].inspect}"
             puts e.instance_variable_get("@response_body").inspect
             raise e
           end
         }
 
-        milestones.select { |m| milestone_titles.include? m.fetch('title') }.each { |m|
-          milestone_number = actual_milestones[m.fetch('title')]
+        milestones.select { |m| milestone_titles.include? m['title'] }.each { |m|
+          milestone_number = actual_milestones[m['title']]
           opts = to_octokit_opts m
-          puts "#{str}: updating milestone '#{m.fetch('title')}'"
+          puts "#{str}: updating milestone '#{m['title']}'"
           octokit_connection.update_milestone(repo, milestone_number, opts)
         }
       }
